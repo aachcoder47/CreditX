@@ -159,8 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg bg-black/50 border border-cyan-500/30">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#00F0FF]" />
                   <span className="text-[11px] sm:text-xs font-mono font-bold text-cyan-300 whitespace-nowrap">
-                    {wallet.solBalance.toFixed(isEthBased ? 3 : 2)}
-                    <span className="hidden xs:inline"> {currency}</span>
+                    {wallet.solBalance.toFixed(isEthBased ? 3 : 2)} {currency}
                   </span>
                 </div>
 
