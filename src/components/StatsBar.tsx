@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, Flame, Shield, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, Flame, Shield, Coins } from 'lucide-react';
 import { COMMISSION_TREASURY_ADDRESS } from '../utils/blockchain';
 
 interface StatsBarProps {
@@ -17,75 +17,108 @@ export const StatsBar: React.FC<StatsBarProps> = ({
   totalCommission,
   currency,
 }) => {
-  const isEthBased = currency.toUpperCase().includes('ETH') || currency.toUpperCase().includes('POL') || currency.toUpperCase().includes('BNB');
+  const isEthBased = ['ETH', 'POL', 'BNB'].some(s => currency.toUpperCase().includes(s));
 
   const stats = [
     {
-      label: 'SESSION VOLUME',
-      value: `${totalVolume.toFixed(isEthBased ? 4 : 2)} ${currency}`,
-      sublabel: 'REAL ON-CHAIN BETS',
-      icon: TrendingUp,
-      accent: 'text-cyan-400',
-      border: 'border-cyan-500/20 hover:border-cyan-500/40',
-      glow: 'shadow-[0_0_15px_rgba(0,240,255,0.08)]',
+      label: 'Session Volume',
+      value: `${totalVolume.toFixed(isEthBased ? 4 : 2)}`,
+      unit: currency,
+      sub: 'Real on-chain bets',
+      Icon: TrendingUp,
+      accentText: 'text-cyan-300',
+      accentBg: 'rgba(0,240,255,0.07)',
+      accentBorder: 'rgba(0,240,255,0.16)',
+      glowColor: 'rgba(0,240,255,0.18)',
+      iconColor: '#22D3EE',
     },
     {
-      label: 'TOTAL FLIPS',
+      label: 'Total Flips',
       value: totalFlips.toLocaleString(),
-      sublabel: '5-SEC PVP ROUNDS',
-      icon: Flame,
-      accent: 'text-purple-400',
-      border: 'border-purple-500/20 hover:border-purple-500/40',
-      glow: 'shadow-[0_0_15px_rgba(112,0,255,0.08)]',
+      unit: '',
+      sub: '5-sec PVP rounds',
+      Icon: Flame,
+      accentText: 'text-violet-300',
+      accentBg: 'rgba(139,92,246,0.07)',
+      accentBorder: 'rgba(139,92,246,0.18)',
+      glowColor: 'rgba(112,0,255,0.18)',
+      iconColor: '#A78BFA',
     },
     {
-      label: 'WIN RATE',
-      value: totalFlips > 0 ? `${winRate.toFixed(1)}%` : '0.0%',
-      sublabel: '50/50 CRYPTO SEED',
-      icon: Shield,
-      accent: 'text-emerald-400',
-      border: 'border-emerald-500/20 hover:border-emerald-500/40',
-      glow: 'shadow-[0_0_15px_rgba(16,185,129,0.08)]',
+      label: 'Win Rate',
+      value: totalFlips > 0 ? `${winRate.toFixed(1)}` : '0.0',
+      unit: '%',
+      sub: '50/50 provably fair',
+      Icon: Shield,
+      accentText: 'text-emerald-300',
+      accentBg: 'rgba(16,185,129,0.07)',
+      accentBorder: 'rgba(16,185,129,0.18)',
+      glowColor: 'rgba(16,185,129,0.15)',
+      iconColor: '#34D399',
     },
     {
-      label: 'COMMISSION ROUTED',
-      value: `${totalCommission.toFixed(isEthBased ? 5 : 3)} ${currency}`,
-      sublabel: `TO ${COMMISSION_TREASURY_ADDRESS.slice(0, 6)}...${COMMISSION_TREASURY_ADDRESS.slice(-4)}`,
-      icon: CheckCircle2,
-      accent: 'text-amber-400',
-      border: 'border-amber-500/20 hover:border-amber-500/40',
-      glow: 'shadow-[0_0_15px_rgba(245,158,11,0.08)]',
+      label: 'Commission Sent',
+      value: `${totalCommission.toFixed(isEthBased ? 5 : 3)}`,
+      unit: currency,
+      sub: `→ ${COMMISSION_TREASURY_ADDRESS.slice(0, 6)}...${COMMISSION_TREASURY_ADDRESS.slice(-4)}`,
+      Icon: Coins,
+      accentText: 'text-amber-300',
+      accentBg: 'rgba(245,158,11,0.07)',
+      accentBorder: 'rgba(245,158,11,0.18)',
+      glowColor: 'rgba(245,158,11,0.15)',
+      iconColor: '#FCD34D',
     },
   ];
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-3">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3.5">
-        {stats.map((stat, i) => {
-          const Icon = stat.icon;
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        {stats.map((s, i) => {
+          const Icon = s.Icon;
           return (
             <motion.div
               key={i}
-              whileHover={{ y: -2, scale: 1.015 }}
-              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-              className={`p-2.5 sm:p-4 rounded-2xl glass-panel border ${stat.border} ${stat.glow} flex flex-col justify-between transition-all duration-300 cursor-default`}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ y: -3, scale: 1.018 }}
+              className="relative rounded-2xl p-3 sm:p-4 cursor-default overflow-hidden transition-all duration-300"
+              style={{
+                background: `radial-gradient(110% 90% at 50% -10%, ${s.accentBg} 0%, rgba(8,10,18,0.85) 100%)`,
+                border: `1px solid ${s.accentBorder}`,
+                boxShadow: `0 0 30px -10px ${s.glowColor}, 0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 24px rgba(0,0,0,0.5)`,
+              }}
             >
-              <div className="flex items-center justify-between gap-1">
-                <span className="text-[9px] sm:text-[10px] font-mono tracking-wider text-slate-400 uppercase truncate">
-                  {stat.label}
+              {/* Corner glow */}
+              <div
+                className="absolute -top-6 -right-6 w-20 h-20 rounded-full pointer-events-none"
+                style={{ background: `radial-gradient(circle, ${s.glowColor} 0%, transparent 70%)` }}
+              />
+
+              <div className="relative flex items-start justify-between gap-2">
+                <span className="text-[9px] sm:text-[10px] font-mono tracking-wider text-slate-400 uppercase leading-tight">
+                  {s.label}
                 </span>
-                <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${stat.accent} shrink-0`} />
+                <div
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: `${s.accentBg}`, border: `1px solid ${s.accentBorder}` }}
+                >
+                  <Icon style={{ color: s.iconColor, width: 13, height: 13 }} />
+                </div>
               </div>
 
-              <div className="mt-1.5 sm:mt-2 flex flex-col sm:flex-row sm:items-baseline justify-between gap-0.5">
-                <span className={`text-xs sm:text-lg md:text-xl font-['Orbitron'] font-black tracking-tight ${stat.accent} truncate`}>
-                  {stat.value}
-                </span>
-                {stat.sublabel && (
-                  <span className="text-[8px] sm:text-[9px] font-mono text-slate-400 truncate">
-                    {stat.sublabel}
+              <div className="relative mt-2 sm:mt-3">
+                <div className={`flex items-baseline gap-1 ${s.accentText}`}>
+                  <span className="font-['Orbitron'] text-sm sm:text-xl font-black tracking-tight leading-none">
+                    {s.value}
                   </span>
-                )}
+                  {s.unit && (
+                    <span className="text-[10px] sm:text-xs font-mono font-bold opacity-70">{s.unit}</span>
+                  )}
+                </div>
+                <p className="text-[8px] sm:text-[9px] font-mono text-slate-500 mt-1 truncate">
+                  {s.sub}
+                </p>
               </div>
             </motion.div>
           );

@@ -452,16 +452,37 @@ export function App() {
   const currentCurrency = wallet.currency || (wallet.network === 'Solana' ? 'SOL' : 'ETH');
 
   return (
-    <div className={`min-h-screen relative flex flex-col justify-between text-slate-100 ${isScreenShaking ? 'animate-[bounce_0.15s_infinite]' : ''}`}>
-      {/* Website Opening Intro Cinematic Transition */}
+    <div className={`min-h-screen relative flex flex-col text-slate-100 ${isScreenShaking ? 'animate-[bounce_0.12s_3]' : ''}`}>
+      {/* Cinematic Opening */}
       <AnimatePresence>
         {showOpening && (
           <OpeningTransition onComplete={() => setShowOpening(false)} />
         )}
       </AnimatePresence>
 
-      {/* Dynamic Particle Canvas */}
-      <BackgroundFX intensity={gameState === 'FLIPPING' ? 'intense' : 'normal'} />
+      {/* ── Deep-space ambient background ── */}
+      <div className="fixed inset-0 -z-20 pointer-events-none">
+        {/* Base gradient */}
+        <div className="absolute inset-0" style={{
+          background: 'linear-gradient(160deg, #03040A 0%, #050711 40%, #040509 100%)'
+        }} />
+        {/* Cyan orb — top left */}
+        <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full animate-pulse-glow pointer-events-none" style={{
+          background: 'radial-gradient(circle, rgba(0,240,255,0.10) 0%, transparent 70%)'
+        }} />
+        {/* Violet orb — top right */}
+        <div className="absolute -top-20 -right-20 w-[500px] h-[500px] rounded-full animate-pulse-glow pointer-events-none" style={{
+          background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)',
+          animationDelay: '2s'
+        }} />
+        {/* Center glow */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full pointer-events-none" style={{
+          background: 'radial-gradient(ellipse, rgba(6,182,212,0.04) 0%, transparent 70%)'
+        }} />
+        {/* Animated cyber grid */}
+        <div className="absolute inset-0 cyber-grid cyber-grid-glow opacity-100" />
+      </div>
+
 
       {/* Top Navbar with Entrance Spring */}
       <motion.div
@@ -552,29 +573,36 @@ export function App() {
         onUpdateClientSeed={(newSeed) => setClientSeed(newSeed)}
       />
 
-      {/* Footer with Commission Treasury Transparency & Replay Intro */}
-      <footer className="relative z-10 w-full border-t border-white/10 py-5 sm:py-6 px-3 sm:px-4 text-center text-[11px] sm:text-xs font-mono text-slate-500 bg-[#07080C]/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2">
-            <span className="font-['Orbitron'] font-bold text-slate-300">CYBERFLIP // ON-CHAIN ARENA</span>
-            <span>• Verified 5-Second Coinflip</span>
+      {/* Footer */}
+      <footer className="relative z-10 w-full mt-auto border-t border-white/[0.06] py-5 sm:py-6 px-4 sm:px-6 bg-[#030408]/90 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-600 p-[1px] shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+              <div className="w-full h-full bg-[#030408] rounded-[6px] flex items-center justify-center">
+                <span className="font-['Orbitron'] text-[9px] font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">CX</span>
+              </div>
+            </div>
+            <div>
+              <span className="font-['Orbitron'] text-xs font-black tracking-wider text-white">CYBER<span className="text-cyan-400">FLIP</span></span>
+              <p className="text-[10px] font-mono text-slate-500 mt-0.5">On-chain • Provably Fair • 5-second rounds</p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-slate-400">
-            <span>Treasury: <strong className="text-cyan-400">0x155A...5Af9</strong></span>
-            <span>•</span>
-            <button 
+
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-[11px] font-mono text-slate-500">
+            <span>Treasury: <strong className="text-cyan-400/80 font-mono">0x155A...5Af9</strong></span>
+            <button
               onClick={() => setProvablyFairOpen(true)}
-              className="hover:text-cyan-400 underline underline-offset-2 transition-colors"
+              className="hover:text-cyan-400 transition-colors underline underline-offset-2"
             >
-              Provably Fair Rules
+              Provably Fair
             </button>
-            <span>•</span>
-            <button 
+            <button
               onClick={() => setShowOpening(true)}
-              className="hover:text-purple-400 underline underline-offset-2 transition-colors text-slate-400 hover:text-slate-200"
+              className="hover:text-purple-400 transition-colors underline underline-offset-2"
             >
               Replay Intro
             </button>
+            <span className="text-slate-600">2% Commission</span>
           </div>
         </div>
       </footer>

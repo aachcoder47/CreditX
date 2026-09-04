@@ -1,9 +1,9 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
+/* ─── Base Reset ─────────────────────────────────────────────────────────── */
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   html {
     scroll-behavior: smooth;
@@ -11,143 +11,138 @@
   }
 
   body {
-    background-color: #07080C;
-    color: #F3F4F6;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #030508;
+    color: #E2E8F0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     overflow-x: hidden;
     min-height: 100vh;
     margin: 0;
   }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
 }
 
-/* Custom Typography Helpers */
-.font-orbitron {
-  font-family: 'Orbitron', -apple-system, sans-serif;
-}
+/* ─── Font Utilities ─────────────────────────────────────────────────────── */
+.font-orbitron { font-family: 'Orbitron', sans-serif; }
+.font-mono-jet { font-family: 'JetBrains Mono', monospace; }
 
-/* Cyber Grid & Dynamic Backgrounds */
+
+/* ─── Cyber Grid ─────────────────────────────────────────────────────────── */
 .cyber-grid {
-  background-size: 36px 36px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  background-image:
+    linear-gradient(to right, rgba(0,240,255,0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,240,255,0.045) 1px, transparent 1px);
+  animation: gridDrift 30s linear infinite;
+}
+
+@keyframes gridDrift {
+  0%   { background-position: 0 0; }
+  100% { background-position: 44px 44px; }
 }
 
 .cyber-grid-glow {
-  mask-image: radial-gradient(circle at center, black 30%, transparent 75%);
-  -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 25%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 25%, transparent 78%);
 }
 
-/* Ultra Glassmorphism */
+/* ─── Glassmorphism Panels ───────────────────────────────────────────────── */
 .glass-panel {
-  background: rgba(13, 16, 26, 0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: rgba(10, 13, 22, 0.78);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.03) inset,
+    0 25px 70px -15px rgba(0,0,0,0.9),
+    0 1px 0 rgba(255,255,255,0.07) inset;
 }
 
 .glass-panel-cyan {
-  background: radial-gradient(130% 100% at 50% 0%, rgba(0, 240, 255, 0.07) 0%, rgba(7, 10, 18, 0.85) 100%);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 240, 255, 0.35);
-  box-shadow: 0 0 45px -10px rgba(0, 240, 255, 0.25), inset 0 1px 1px rgba(0, 240, 255, 0.3);
+  background: radial-gradient(110% 80% at 50% -10%, rgba(0,240,255,0.11) 0%, rgba(6,8,18,0.90) 100%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(0,240,255,0.22);
+  box-shadow:
+    0 0 70px -15px rgba(0,240,255,0.22),
+    0 0 0 1px rgba(0,240,255,0.07) inset,
+    0 1px 0 rgba(0,240,255,0.20) inset,
+    0 30px 80px -20px rgba(0,0,0,0.95);
 }
 
 .glass-panel-violet {
-  background: radial-gradient(130% 100% at 50% 0%, rgba(112, 0, 255, 0.08) 0%, rgba(7, 10, 18, 0.85) 100%);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  box-shadow: 0 0 45px -10px rgba(112, 0, 255, 0.3), inset 0 1px 1px rgba(168, 85, 247, 0.3);
+  background: radial-gradient(110% 80% at 50% -10%, rgba(139,92,246,0.13) 0%, rgba(6,8,18,0.90) 100%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(139,92,246,0.28);
+  box-shadow:
+    0 0 70px -15px rgba(112,0,255,0.28),
+    0 0 0 1px rgba(139,92,246,0.08) inset,
+    0 1px 0 rgba(139,92,246,0.22) inset,
+    0 30px 80px -20px rgba(0,0,0,0.95);
 }
 
-/* Glowing Neon Text & Accents */
-.text-glow-cyan {
-  text-shadow: 0 0 10px rgba(0, 240, 255, 0.8), 0 0 22px rgba(0, 240, 255, 0.45);
-}
+/* ─── Neon Text Glows ────────────────────────────────────────────────────── */
+.text-glow-cyan    { text-shadow: 0 0 10px rgba(0,240,255,0.9),   0 0 28px rgba(0,240,255,0.45),   0 0 60px rgba(0,240,255,0.15); }
+.text-glow-violet  { text-shadow: 0 0 10px rgba(168,85,247,0.9),  0 0 28px rgba(112,0,255,0.45),   0 0 60px rgba(112,0,255,0.15); }
+.text-glow-emerald { text-shadow: 0 0 10px rgba(16,185,129,0.9),  0 0 26px rgba(16,185,129,0.42); }
+.text-glow-amber   { text-shadow: 0 0 10px rgba(245,158,11,0.9),  0 0 26px rgba(245,158,11,0.4); }
 
-.text-glow-violet {
-  text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 22px rgba(112, 0, 255, 0.45);
-}
+/* ─── Box Glows ──────────────────────────────────────────────────────────── */
+.glow-cyan    { box-shadow: 0 0 30px rgba(0,240,255,0.35),  0 0 70px rgba(0,240,255,0.12); }
+.glow-violet  { box-shadow: 0 0 30px rgba(112,0,255,0.35),  0 0 70px rgba(112,0,255,0.12); }
+.glow-emerald { box-shadow: 0 0 24px rgba(16,185,129,0.30), 0 0 55px rgba(16,185,129,0.10); }
+.glow-amber   { box-shadow: 0 0 24px rgba(245,158,11,0.35), 0 0 55px rgba(245,158,11,0.12); }
 
-.text-glow-emerald {
-  text-shadow: 0 0 10px rgba(16, 185, 129, 0.8), 0 0 20px rgba(16, 185, 129, 0.4);
-}
+/* ─── 3D Coin ─────────────────────────────────────────────────────────────── */
+.preserve-3d     { transform-style: preserve-3d; -webkit-transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 
-/* 3D Coin Helpers */
-.preserve-3d {
-  transform-style: preserve-3d;
-  -webkit-transform-style: preserve-3d;
-}
-
-.backface-hidden {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* Shimmer & Glow Animations */
+/* ─── Shimmer ────────────────────────────────────────────────────────────── */
 @keyframes shimmer {
-  0% { transform: translateX(-150%) skewX(-15deg); }
-  100% { transform: translateX(250%) skewX(-15deg); }
+  0%   { transform: translateX(-150%) skewX(-15deg); }
+  100% { transform: translateX(250%)  skewX(-15deg); }
 }
+.animate-shimmer { animation: shimmer 2.6s cubic-bezier(0.4,0,0.2,1) infinite; }
 
-.animate-shimmer {
-  animation: shimmer 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
+/* ─── Pulse Glow ─────────────────────────────────────────────────────────── */
 @keyframes pulseGlow {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 0.9; transform: scale(1.08); }
+  0%,100% { opacity: 0.45; transform: scale(1); }
+  50%      { opacity: 0.90; transform: scale(1.07); }
 }
+.animate-pulse-glow { animation: pulseGlow 4s ease-in-out infinite; }
 
-.animate-pulse-glow {
-  animation: pulseGlow 4s ease-in-out infinite;
-}
-
+/* ─── Float ──────────────────────────────────────────────────────────────── */
 @keyframes floatCoin {
-  0%, 100% { transform: translateY(0px) rotateX(0deg); }
-  50% { transform: translateY(-10px) rotateX(4deg); }
+  0%,100% { transform: translateY(0px); }
+  50%      { transform: translateY(-10px); }
 }
+.animate-float { animation: floatCoin 3.5s ease-in-out infinite; }
 
-.animate-float {
-  animation: floatCoin 3.5s ease-in-out infinite;
-}
+/* ─── Slow Spins ─────────────────────────────────────────────────────────── */
+@keyframes spinSlow        { from { transform: rotate(0deg);   } to { transform: rotate(360deg); } }
+@keyframes spinReverseSlow { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+.animate-spin-slow         { animation: spinSlow        18s linear infinite; }
+.animate-spin-reverse-slow { animation: spinReverseSlow 22s linear infinite; }
 
-@keyframes spinSlow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+/* ─── Stat Number Count-up Slide ─────────────────────────────────────────── */
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+.animate-slide-up { animation: slideInUp 0.4s cubic-bezier(0.16,1,0.3,1) both; }
 
-.animate-spin-slow {
-  animation: spinSlow 18s linear infinite;
+/* ─── Neon Border Pulse ──────────────────────────────────────────────────── */
+@keyframes borderCyanPulse {
+  0%,100% { box-shadow: 0 0 10px rgba(0,240,255,0.15); border-color: rgba(0,240,255,0.25); }
+  50%      { box-shadow: 0 0 25px rgba(0,240,255,0.40); border-color: rgba(0,240,255,0.60); }
 }
+.animate-border-cyan { animation: borderCyanPulse 2.2s ease-in-out infinite; }
 
-@keyframes spinReverseSlow {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
-}
-
-.animate-spin-reverse-slow {
-  animation: spinReverseSlow 22s linear infinite;
-}
-
-/* Modern Minimal Scrollbar */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(7, 8, 12, 0.8);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 240, 255, 0.5);
-}
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: rgba(4,6,10,0.8); }
+::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.18); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,240,255,0.45); }
