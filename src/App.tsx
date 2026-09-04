@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { BackgroundFX } from './components/BackgroundFX';
 import { Navbar } from './components/Navbar';
 import { StatsBar } from './components/StatsBar';
@@ -7,6 +8,7 @@ import { LiveActivityFeed } from './components/LiveActivityFeed';
 import { ProvablyFairModal } from './components/ProvablyFairModal';
 import { WalletModal } from './components/WalletModal';
 import { WinLossOverlay } from './components/WinLossOverlay';
+import { OpeningTransition } from './components/OpeningTransition';
 import type { CoinSide, GameState, WalletState, FlipResult, LivePVPItem } from './types/game';
 import { soundFx } from './utils/audio';
 import { computeProvablyFairResult, generateRandomHex, sha256 } from './utils/provablyFair';
@@ -59,7 +61,8 @@ export function App() {
   const [livePVP, setLivePVP] = useState<LivePVPItem[]>([]);
   const [userHistory, setUserHistory] = useState<FlipResult[]>([]);
 
-  // Modals & Sound
+  // Modals, Intro & Sound
+  const [showOpening, setShowOpening] = useState<boolean>(true);
   const [walletModalOpen, setWalletModalOpen] = useState<boolean>(false);
   const [provablyFairOpen, setProvablyFairOpen] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(soundFx.getMuted());
@@ -450,22 +453,40 @@ export function App() {
 
   return (
     <div className={`min-h-screen relative flex flex-col justify-between text-slate-100 ${isScreenShaking ? 'animate-[bounce_0.15s_infinite]' : ''}`}>
+      {/* Website Opening Intro Cinematic Transition */}
+      <AnimatePresence>
+        {showOpening && (
+          <OpeningTransition onComplete={() => setShowOpening(false)} />
+        )}
+      </AnimatePresence>
+
       {/* Dynamic Particle Canvas */}
       <BackgroundFX intensity={gameState === 'FLIPPING' ? 'intense' : 'normal'} />
 
-      {/* Top Navbar */}
-      <Navbar
-        wallet={wallet}
-        isMuted={isMuted}
-        onToggleMute={handleToggleMute}
-        onOpenWalletModal={() => setWalletModalOpen(true)}
-        onOpenProvablyFair={() => setProvablyFairOpen(true)}
-        onDisconnectWallet={handleDisconnectWallet}
-        onAddFaucetFunds={handleRefreshBalance}
-      />
+      {/* Top Navbar with Entrance Spring */}
+      <motion.div
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
+        <Navbar
+          wallet={wallet}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+          onOpenWalletModal={() => setWalletModalOpen(true)}
+          onOpenProvablyFair={() => setProvablyFairOpen(true)}
+          onDisconnectWallet={handleDisconnectWallet}
+          onAddFaucetFunds={handleRefreshBalance}
+        />
+      </motion.div>
 
-      {/* Main Game Arena Content */}
-      <main className="relative z-10 flex-1 py-4">
+      {/* Main Game Arena Content with Staggered Entrance */}
+      <motion.main 
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.55, delay: 0.1, ease: 'easeOut' }}
+        className="relative z-10 flex-1 py-3 sm:py-4"
+      >
         {/* Real Stats Metrics Bar */}
         <StatsBar
           totalVolume={totalVolume}
@@ -497,7 +518,7 @@ export function App() {
           userHistory={userHistory}
           currency={currentCurrency}
         />
-      </main>
+      </motion.main>
 
       {/* Win / Loss Overlay */}
       <WinLossOverlay
@@ -531,15 +552,15 @@ export function App() {
         onUpdateClientSeed={(newSeed) => setClientSeed(newSeed)}
       />
 
-      {/* Footer with Commission Treasury Transparency */}
-      <footer className="relative z-10 w-full border-t border-white/10 py-6 px-4 text-center text-xs font-mono text-slate-500 bg-[#090A0F]/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      {/* Footer with Commission Treasury Transparency & Replay Intro */}
+      <footer className="relative z-10 w-full border-t border-white/10 py-5 sm:py-6 px-3 sm:px-4 text-center text-[11px] sm:text-xs font-mono text-slate-500 bg-[#07080C]/80 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
           <div className="flex items-center gap-2">
             <span className="font-['Orbitron'] font-bold text-slate-300">CYBERFLIP // ON-CHAIN ARENA</span>
             <span>• Verified 5-Second Coinflip</span>
           </div>
-          <div className="flex items-center gap-4 text-slate-400">
-            <span>Commission Treasury: <strong className="text-cyan-400">0x155A...5Af9</strong></span>
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-slate-400">
+            <span>Treasury: <strong className="text-cyan-400">0x155A...5Af9</strong></span>
             <span>•</span>
             <button 
               onClick={() => setProvablyFairOpen(true)}
@@ -548,7 +569,12 @@ export function App() {
               Provably Fair Rules
             </button>
             <span>•</span>
-            <span>2% House Fee</span>
+            <button 
+              onClick={() => setShowOpening(true)}
+              className="hover:text-purple-400 underline underline-offset-2 transition-colors text-slate-400 hover:text-slate-200"
+            >
+              Replay Intro
+            </button>
           </div>
         </div>
       </footer>
