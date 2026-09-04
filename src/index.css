@@ -5,72 +5,81 @@
     box-sizing: border-box;
   }
 
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
-    background-color: #090A0F;
+    background-color: #07080C;
     color: #F3F4F6;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     min-height: 100vh;
     margin: 0;
-    selection-background-color: rgba(0, 240, 255, 0.3);
   }
 }
 
-/* Cyber Grid & Background FX */
+/* Custom Typography Helpers */
+.font-orbitron {
+  font-family: 'Orbitron', -apple-system, sans-serif;
+}
+
+/* Cyber Grid & Dynamic Backgrounds */
 .cyber-grid {
-  background-size: 40px 40px;
+  background-size: 36px 36px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
 }
 
 .cyber-grid-glow {
-  mask-image: radial-gradient(circle at center, black 40%, transparent 80%);
+  mask-image: radial-gradient(circle at center, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 75%);
 }
 
-/* Glassmorphism Classes */
+/* Ultra Glassmorphism */
 .glass-panel {
-  background: rgba(15, 17, 26, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(13, 16, 26, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .glass-panel-cyan {
-  background: rgba(0, 240, 255, 0.04);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 240, 255, 0.25);
-  box-shadow: 0 0 25px -5px rgba(0, 240, 255, 0.2);
+  background: radial-gradient(130% 100% at 50% 0%, rgba(0, 240, 255, 0.07) 0%, rgba(7, 10, 18, 0.85) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  box-shadow: 0 0 45px -10px rgba(0, 240, 255, 0.25), inset 0 1px 1px rgba(0, 240, 255, 0.3);
 }
 
 .glass-panel-violet {
-  background: rgba(112, 0, 255, 0.05);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  box-shadow: 0 0 25px -5px rgba(112, 0, 255, 0.25);
+  background: radial-gradient(130% 100% at 50% 0%, rgba(112, 0, 255, 0.08) 0%, rgba(7, 10, 18, 0.85) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 45px -10px rgba(112, 0, 255, 0.3), inset 0 1px 1px rgba(168, 85, 247, 0.3);
 }
 
-/* Glowing Neon Text & Borders */
+/* Glowing Neon Text & Accents */
 .text-glow-cyan {
-  text-shadow: 0 0 12px rgba(0, 240, 255, 0.7), 0 0 24px rgba(0, 240, 255, 0.4);
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.8), 0 0 22px rgba(0, 240, 255, 0.45);
 }
 
 .text-glow-violet {
-  text-shadow: 0 0 12px rgba(168, 85, 247, 0.7), 0 0 24px rgba(112, 0, 255, 0.4);
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 22px rgba(112, 0, 255, 0.45);
 }
 
-.box-glow-cyan {
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.4), inset 0 0 15px rgba(0, 240, 255, 0.2);
+.text-glow-emerald {
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.8), 0 0 20px rgba(16, 185, 129, 0.4);
 }
 
-.box-glow-violet {
-  box-shadow: 0 0 20px rgba(112, 0, 255, 0.4), inset 0 0 15px rgba(112, 0, 255, 0.2);
-}
-
-/* 3D Coin Preservation */
+/* 3D Coin Helpers */
 .preserve-3d {
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
 }
 
 .backface-hidden {
@@ -78,40 +87,67 @@
   -webkit-backface-visibility: hidden;
 }
 
-/* Custom Scrollbar */
+/* Shimmer & Glow Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-150%) skewX(-15deg); }
+  100% { transform: translateX(250%) skewX(-15deg); }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.08); }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+@keyframes floatCoin {
+  0%, 100% { transform: translateY(0px) rotateX(0deg); }
+  50% { transform: translateY(-10px) rotateX(4deg); }
+}
+
+.animate-float {
+  animation: floatCoin 3.5s ease-in-out infinite;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 18s linear infinite;
+}
+
+@keyframes spinReverseSlow {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.animate-spin-reverse-slow {
+  animation: spinReverseSlow 22s linear infinite;
+}
+
+/* Modern Minimal Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(9, 10, 15, 0.8);
+  background: rgba(7, 8, 12, 0.8);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 240, 255, 0.4);
-}
-
-/* Shimmer Animation */
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(200%); }
-}
-
-.animate-shimmer {
-  animation: shimmer 2.5s infinite;
-}
-
-@keyframes pulseGlow {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 3s ease-in-out infinite;
+  background: rgba(0, 240, 255, 0.5);
 }
