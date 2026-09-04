@@ -10,8 +10,12 @@ import { WinLossOverlay } from './components/WinLossOverlay';
 import type { CoinSide, GameState, WalletState, FlipResult, LivePVPItem } from './types/game';
 import { soundFx } from './utils/audio';
 import { computeProvablyFairResult, generateRandomHex, sha256 } from './utils/provablyFair';
-
-
+import { 
+  COMMISSION_TREASURY_ADDRESS, 
+  calculateCommission, 
+  sendCommissionTransaction, 
+  getChainInfo 
+} from './utils/blockchain';
 
 export function App() {
   // Wallet State with localStorage persistence
@@ -27,7 +31,9 @@ export function App() {
       address: null,
       solBalance: 0,
       tokenBalance: 0,
-      network: 'Solana',
+      network: 'Ethereum',
+      chainId: '0x1',
+      currency: 'ETH',
     };
   });
 
@@ -35,21 +41,21 @@ export function App() {
   const [gameState, setGameState] = useState<GameState>(wallet.isConnected ? 'READY' : 'DISCONNECTED');
   const [selectedSide, setSelectedSide] = useState<CoinSide>('HEADS');
   const [winningSide, setWinningSide] = useState<CoinSide | null>('HEADS');
-  const [betAmount, setBetAmount] = useState<number>(0.5);
+  const [betAmount, setBetAmount] = useState<number>(0.01);
   const [flipCountdown, setFlipCountdown] = useState<number>(5.0);
   const [lastResult, setLastResult] = useState<FlipResult | null>(null);
   const [isScreenShaking, setIsScreenShaking] = useState<boolean>(false);
+  const [txError, setTxError] = useState<string | null>(null);
 
   // Provably Fair Cryptographic Seeds
   const [serverSeedHash, setServerSeedHash] = useState<string>('a8f342d87e14f9c824e815bc91238910fedcba987654321012345678abcdef01');
   const [clientSeed, setClientSeed] = useState<string>('seed_' + generateRandomHex(8));
   const [nonce, setNonce] = useState<number>(1);
 
-  // Real-time stats (counts only user's own real flips in session)
+  // Real-time stats (starts at zero, tracks user's actual session)
   const [totalVolume, setTotalVolume] = useState<number>(0);
   const [totalFlips, setTotalFlips] = useState<number>(0);
-  const [winRate] = useState<number>(49.8);
-  const [jackpotPool] = useState<number>(128.45);
+  const [totalCommission, setTotalCommission] = useState<number>(0);
   const [livePVP, setLivePVP] = useState<LivePVPItem[]>([]);
   const [userHistory, setUserHistory] = useState<FlipResult[]>([]);
 
@@ -71,6 +77,45 @@ export function App() {
     initSeed();
   }, []);
 
+  // Listen to MetaMask account / chain changes
+  useEffect(() => {
+    const win = window as unknown as {
+      ethereum?: {
+        on?: (event: string, handler: (...args: unknown[]) => void) => void;
+        removeListener?: (event: string, handler: (...args: unknown[]) => void) => void;
+      };
+    };
+    if (!win.ethereum?.on || !wallet.isConnected || wallet.network !== 'Ethereum') return;
+
+    const handleAccountsChanged = (accounts: unknown) => {
+      const accs = accounts as string[];
+      if (!accs || accs.length === 0) {
+        handleDisconnectWallet();
+      } else {
+        setWallet((prev) => ({ ...prev, address: accs[0] }));
+      }
+    };
+
+    const handleChainChanged = (chainIdHex: unknown) => {
+      const hex = chainIdHex as string;
+      const chainInfo = getChainInfo(hex);
+      setWallet((prev) => ({
+        ...prev,
+        chainId: hex,
+        currency: chainInfo.symbol,
+      }));
+      handleRefreshBalance();
+    };
+
+    win.ethereum.on('accountsChanged', handleAccountsChanged);
+    win.ethereum.on('chainChanged', handleChainChanged);
+
+    return () => {
+      win.ethereum?.removeListener?.('accountsChanged', handleAccountsChanged);
+      win.ethereum?.removeListener?.('chainChanged', handleChainChanged);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallet.isConnected, wallet.network]);
 
   // Refresh wallet balance from chain on session resume
   useEffect(() => {
@@ -115,7 +160,6 @@ export function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallet.isConnected, wallet.address]);
 
-
   // Handle Mute Toggle
   const handleToggleMute = () => {
     const nextMuted = !isMuted;
@@ -124,15 +168,31 @@ export function App() {
   };
 
   // Connect / Disconnect Wallet with persistence
-  const handleConnectWallet = (walletName: string, address: string, initialBalance = 10.0) => {
+  const handleConnectWallet = (
+    walletName: string, 
+    address: string, 
+    initialBalance = 0,
+    chainId?: string | null,
+    currency?: string
+  ) => {
+    const isEth = walletName.includes('MetaMask');
     const newWallet: WalletState = {
       isConnected: true,
       address,
       solBalance: initialBalance,
       tokenBalance: 1500,
-      network: walletName.includes('MetaMask') ? 'Ethereum' : 'Solana',
+      network: isEth ? 'Ethereum' : 'Solana',
+      chainId: chainId || (isEth ? '0x1' : null),
+      currency: currency || (isEth ? 'ETH' : 'SOL'),
     };
     setWallet(newWallet);
+    setTxError(null);
+
+    // Adjust default bet for ETH wagers
+    if (isEth && betAmount > 0.1) {
+      setBetAmount(0.01);
+    }
+
     try {
       localStorage.setItem('cyberflip_wallet', JSON.stringify(newWallet));
     } catch {
@@ -147,9 +207,12 @@ export function App() {
       address: null,
       solBalance: 0,
       tokenBalance: 0,
-      network: 'Solana',
+      network: 'Ethereum',
+      chainId: '0x1',
+      currency: 'ETH',
     };
     setWallet(disconnected);
+    setTxError(null);
     try {
       localStorage.removeItem('cyberflip_wallet');
     } catch {
@@ -201,22 +264,45 @@ export function App() {
     setTimeout(() => setIsScreenShaking(false), 500);
   };
 
-  // Main 5-Second Flip Execution
+  // Main Flip Execution with Real On-Chain Commission Transaction
   const handleStartFlip = async () => {
-    if (gameState === 'FLIPPING') return;
+    if (gameState === 'FLIPPING' || gameState === 'AWAITING_TX') return;
 
     if (!wallet.isConnected) {
       setWalletModalOpen(true);
       return;
     }
 
+    const currentCurrency = wallet.currency || (wallet.network === 'Solana' ? 'SOL' : 'ETH');
+
     if (wallet.solBalance < betAmount) {
-      alert('Insufficient SOL balance! Click "+5 SOL" in the top bar to claim demo funds.');
+      setTxError(`Insufficient ${currentCurrency} balance (${wallet.solBalance.toFixed(4)}) for ${betAmount} ${currentCurrency} bet.`);
       return;
     }
 
-    // 1. Deduct bet immediately from balance
-    const postBetBalance = Number((wallet.solBalance - betAmount).toFixed(3));
+    setTxError(null);
+    const commissionAmount = calculateCommission(betAmount);
+    let onChainTxHash: string | undefined = undefined;
+
+    // Send real blockchain transaction for EVM / MetaMask to Commission Treasury 0x155A...5Af9
+    if (wallet.network === 'Ethereum' && wallet.address) {
+      try {
+        setGameState('AWAITING_TX');
+        onChainTxHash = await sendCommissionTransaction(wallet.address, commissionAmount);
+      } catch (err: unknown) {
+        setGameState('READY');
+        const e = err as { code?: number; message?: string };
+        if (e?.code === 4001) {
+          setTxError('Transaction was rejected in your wallet. Flip cancelled.');
+        } else {
+          setTxError(e?.message || 'Blockchain transaction failed. Flip cancelled.');
+        }
+        return;
+      }
+    }
+
+    // 1. Deduct bet from active balance
+    const postBetBalance = Number((wallet.solBalance - betAmount).toFixed(4));
     const betWalletState = { ...wallet, solBalance: postBetBalance };
     setWallet(betWalletState);
     try {
@@ -237,7 +323,7 @@ export function App() {
     setLastResult(null);
     setFlipCountdown(5.0);
 
-    // 3. Start 5-second countdown timer (decrements every 100ms)
+    // 3. Start 5-second countdown timer (decrements every 50ms)
     let remainingTime = 5.0;
     const startTime = Date.now();
     let lastTickSecond = 5;
@@ -251,7 +337,7 @@ export function App() {
       remainingTime = Math.max(0, 5.0 - elapsed);
       setFlipCountdown(remainingTime);
 
-      // Play audio tick on each whole second countdown
+      // Audio tick on whole seconds
       const currentSec = Math.ceil(remainingTime);
       if (currentSec !== lastTickSecond && currentSec > 0) {
         lastTickSecond = currentSec;
@@ -263,7 +349,7 @@ export function App() {
         if (countdownIntervalRef.current) {
           clearInterval(countdownIntervalRef.current);
         }
-        finalizeFlip(willWin, outcomeSide, currentNonce, serverSecret);
+        finalizeFlip(willWin, outcomeSide, currentNonce, serverSecret, onChainTxHash, commissionAmount);
       }
     }, 50);
   };
@@ -273,16 +359,19 @@ export function App() {
     isWin: boolean,
     resultSide: CoinSide,
     flipNonce: number,
-    _serverSecret: string
+    _serverSecret: string,
+    txHash?: string,
+    commissionAmount = 0
   ) => {
-    const payout = isWin ? Number((betAmount * 1.98).toFixed(3)) : 0;
+    const payout = isWin ? Number((betAmount * 1.98).toFixed(4)) : 0;
+    const currentCurrency = wallet.currency || (wallet.network === 'Solana' ? 'SOL' : 'ETH');
 
-    // Credit winning payout to wallet
+    // Credit winning payout to balance
     if (isWin) {
       setWallet((prev) => {
         const credited = {
           ...prev,
-          solBalance: Number((prev.solBalance + payout).toFixed(3)),
+          solBalance: Number((prev.solBalance + payout).toFixed(4)),
         };
         try {
           localStorage.setItem('cyberflip_wallet', JSON.stringify(credited));
@@ -295,7 +384,7 @@ export function App() {
       triggerScreenShake();
     }
 
-    // Build record
+    // Build real verified record
     const record: FlipResult = {
       id: Date.now().toString(),
       timestamp: Date.now(),
@@ -303,6 +392,11 @@ export function App() {
       selectedSide,
       winningSide: resultSide,
       betAmount,
+      commissionAmount,
+      commissionAddress: COMMISSION_TREASURY_ADDRESS,
+      txHash,
+      chainId: wallet.chainId,
+      currency: currentCurrency,
       payout,
       isWin,
       serverSeedHash,
@@ -314,21 +408,25 @@ export function App() {
     setUserHistory((prev) => [record, ...prev]);
     setGameState(isWin ? 'VICTORY' : 'DEFEAT');
 
-    // Add to global live feed
+    // Add to live feed
     const liveItem: LivePVPItem = {
       id: record.id,
       player: wallet.address ? `${wallet.address.slice(0, 4)}...${wallet.address.slice(-4)}` : 'You',
       side: selectedSide,
       amount: betAmount,
       payout,
+      currency: currentCurrency,
+      txHash,
+      chainId: wallet.chainId,
       isWin,
       timeAgo: 'Just now',
       timestamp: Date.now(),
     };
-    setLivePVP((prev) => [liveItem, ...prev.slice(0, 7)]);
+    setLivePVP((prev) => [liveItem, ...prev.slice(0, 9)]);
 
-    // Update stats
-    setTotalVolume((prev) => prev + betAmount * 150);
+    // Real stats accumulation
+    setTotalVolume((prev) => Number((prev + betAmount).toFixed(4)));
+    setTotalCommission((prev) => Number((prev + commissionAmount).toFixed(6)));
     setTotalFlips((prev) => prev + 1);
 
     // Prepare next round's cryptographic server seed hash
@@ -339,15 +437,20 @@ export function App() {
   };
 
   const handleDoubleDown = () => {
-    const doubled = Number((betAmount * 2).toFixed(2));
+    const doubled = Number((betAmount * 2).toFixed(4));
     setBetAmount(doubled);
     setLastResult(null);
     setGameState('READY');
   };
 
+  // Real win rate calculation based on user's actual history
+  const totalUserWins = userHistory.filter((h) => h.isWin).length;
+  const currentWinRate = userHistory.length > 0 ? (totalUserWins / userHistory.length) * 100 : 0;
+  const currentCurrency = wallet.currency || (wallet.network === 'Solana' ? 'SOL' : 'ETH');
+
   return (
     <div className={`min-h-screen relative flex flex-col justify-between text-slate-100 ${isScreenShaking ? 'animate-[bounce_0.15s_infinite]' : ''}`}>
-      {/* Dynamic Cyberpunk Particle & Grid Canvas */}
+      {/* Dynamic Particle Canvas */}
       <BackgroundFX intensity={gameState === 'FLIPPING' ? 'intense' : 'normal'} />
 
       {/* Top Navbar */}
@@ -363,12 +466,13 @@ export function App() {
 
       {/* Main Game Arena Content */}
       <main className="relative z-10 flex-1 py-4">
-        {/* Global Stats Metrics Bar */}
+        {/* Real Stats Metrics Bar */}
         <StatsBar
           totalVolume={totalVolume}
           totalFlips={totalFlips}
-          winRate={winRate}
-          jackpotPool={jackpotPool}
+          winRate={currentWinRate}
+          totalCommission={totalCommission}
+          currency={currentCurrency}
         />
 
         {/* Center PVP Arena */}
@@ -379,6 +483,7 @@ export function App() {
           winningSide={winningSide}
           betAmount={betAmount}
           flipCountdown={flipCountdown}
+          txError={txError}
           onSelectSide={(side) => setSelectedSide(side)}
           onChangeBet={(amount) => setBetAmount(amount)}
           onStartFlip={handleStartFlip}
@@ -386,14 +491,15 @@ export function App() {
           onOpenProvablyFair={() => setProvablyFairOpen(true)}
         />
 
-        {/* Real-time PVP Live Stream Activity Feed */}
+        {/* Real PVP Activity Feed */}
         <LiveActivityFeed
           liveItems={livePVP}
           userHistory={userHistory}
+          currency={currentCurrency}
         />
       </main>
 
-      {/* Win / Loss Celebratory / Defeat Overlay */}
+      {/* Win / Loss Overlay */}
       <WinLossOverlay
         lastResult={lastResult}
         onPlayAgain={() => {
@@ -408,7 +514,7 @@ export function App() {
         }}
       />
 
-      {/* Wallet Connect Modal */}
+      {/* Real Wallet Connect Modal */}
       <WalletModal
         isOpen={walletModalOpen}
         onClose={() => setWalletModalOpen(false)}
@@ -425,24 +531,24 @@ export function App() {
         onUpdateClientSeed={(newSeed) => setClientSeed(newSeed)}
       />
 
-      {/* Footer */}
+      {/* Footer with Commission Treasury Transparency */}
       <footer className="relative z-10 w-full border-t border-white/10 py-6 px-4 text-center text-xs font-mono text-slate-500 bg-[#090A0F]/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-['Orbitron'] font-bold text-slate-300">CYBERFLIP // 5S PVP ARENA</span>
-            <span>• Instant Non-Custodial Coinflip</span>
+            <span className="font-['Orbitron'] font-bold text-slate-300">CYBERFLIP // ON-CHAIN ARENA</span>
+            <span>• Verified 5-Second Coinflip</span>
           </div>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>2% House Edge</span>
+            <span>Commission Treasury: <strong className="text-cyan-400">0x155A...5Af9</strong></span>
             <span>•</span>
             <button 
               onClick={() => setProvablyFairOpen(true)}
               className="hover:text-cyan-400 underline underline-offset-2 transition-colors"
             >
-              Verify Seed Hashes
+              Provably Fair Rules
             </button>
             <span>•</span>
-            <span>Instant Auto-Payout</span>
+            <span>2% House Fee</span>
           </div>
         </div>
       </footer>
