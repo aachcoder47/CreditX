@@ -10,8 +10,7 @@ import {
   ShieldCheck,
   ExternalLink,
   Loader2,
-  CheckCircle2,
-  Layers
+  CheckCircle2
 } from 'lucide-react';
 import type { CoinSide, GameState, WalletState } from '../types/game';
 import { Coin3D } from './Coin3D';
