@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BackgroundFX } from './components/BackgroundFX';
+// BackgroundFX replaced by CSS dot-grid
 import { Navbar } from './components/Navbar';
 import { StatsBar } from './components/StatsBar';
 import { Arena } from './components/Arena';
@@ -452,7 +452,7 @@ export function App() {
   const currentCurrency = wallet.currency || (wallet.network === 'Solana' ? 'SOL' : 'ETH');
 
   return (
-    <div className={`min-h-screen relative flex flex-col text-slate-100 ${isScreenShaking ? 'animate-[bounce_0.12s_3]' : ''}`}>
+    <div className={`min-h-screen relative flex flex-col text-white noise-overlay ${isScreenShaking ? 'animate-[bounce_0.12s_3]' : ''}`} style={{ background: '#000' }}>
       {/* Cinematic Opening */}
       <AnimatePresence>
         {showOpening && (
@@ -460,28 +460,8 @@ export function App() {
         )}
       </AnimatePresence>
 
-      {/* ── Deep-space ambient background ── */}
-      <div className="fixed inset-0 -z-20 pointer-events-none">
-        {/* Base gradient */}
-        <div className="absolute inset-0" style={{
-          background: 'linear-gradient(160deg, #03040A 0%, #050711 40%, #040509 100%)'
-        }} />
-        {/* Cyan orb — top left */}
-        <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full animate-pulse-glow pointer-events-none" style={{
-          background: 'radial-gradient(circle, rgba(0,240,255,0.10) 0%, transparent 70%)'
-        }} />
-        {/* Violet orb — top right */}
-        <div className="absolute -top-20 -right-20 w-[500px] h-[500px] rounded-full animate-pulse-glow pointer-events-none" style={{
-          background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)',
-          animationDelay: '2s'
-        }} />
-        {/* Center glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full pointer-events-none" style={{
-          background: 'radial-gradient(ellipse, rgba(6,182,212,0.04) 0%, transparent 70%)'
-        }} />
-        {/* Animated cyber grid */}
-        <div className="absolute inset-0 cyber-grid cyber-grid-glow opacity-100" />
-      </div>
+      {/* ── Pure black dot-grid background (Knox style) ── */}
+      <div className="fixed inset-0 -z-20 pointer-events-none dot-grid" style={{ opacity: 0.5 }} />
 
 
       {/* Top Navbar with Entrance Spring */}
@@ -502,11 +482,11 @@ export function App() {
       </motion.div>
 
       {/* Main Game Arena Content with Staggered Entrance */}
-      <motion.main 
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.55, delay: 0.1, ease: 'easeOut' }}
-        className="relative z-10 flex-1 py-3 sm:py-4"
+      <motion.main
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.12, ease: [0.16,1,0.3,1] }}
+        className="relative z-10 flex-1 pt-[60px] sm:pt-[68px]"
       >
         {/* Real Stats Metrics Bar */}
         <StatsBar
@@ -573,36 +553,30 @@ export function App() {
         onUpdateClientSeed={(newSeed) => setClientSeed(newSeed)}
       />
 
-      {/* Footer */}
-      <footer className="relative z-10 w-full mt-auto border-t border-white/[0.06] py-5 sm:py-6 px-4 sm:px-6 bg-[#030408]/90 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      {/* Footer — Knox editorial style */}
+      <footer
+        className="relative z-10 w-full mt-auto px-5 sm:px-8 lg:px-10 py-6"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#000' }}
+      >
+        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-600 p-[1px] shadow-[0_0_15px_rgba(0,240,255,0.4)]">
-              <div className="w-full h-full bg-[#030408] rounded-[6px] flex items-center justify-center">
-                <span className="font-['Orbitron'] text-[9px] font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">CX</span>
-              </div>
+            <div
+              className="w-6 h-6 flex items-center justify-center"
+              style={{ background: '#00F0FF', clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
+            >
+              <span className="font-mono-ui font-bold text-[8px] text-black">CF</span>
             </div>
             <div>
-              <span className="font-['Orbitron'] text-xs font-black tracking-wider text-white">CYBER<span className="text-cyan-400">FLIP</span></span>
-              <p className="text-[10px] font-mono text-slate-500 mt-0.5">On-chain • Provably Fair • 5-second rounds</p>
+              <span className="font-display font-bold text-sm text-white tracking-tight">CYBER<span style={{ color: '#00F0FF' }}>FLIP</span></span>
+              <p className="font-mono-ui text-[10px] text-white/25 mt-0.5 uppercase tracking-widest">On-chain · Provably Fair · 5s Rounds</p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-[11px] font-mono text-slate-500">
-            <span>Treasury: <strong className="text-cyan-400/80 font-mono">0x155A...5Af9</strong></span>
-            <button
-              onClick={() => setProvablyFairOpen(true)}
-              className="hover:text-cyan-400 transition-colors underline underline-offset-2"
-            >
-              Provably Fair
-            </button>
-            <button
-              onClick={() => setShowOpening(true)}
-              className="hover:text-purple-400 transition-colors underline underline-offset-2"
-            >
-              Replay Intro
-            </button>
-            <span className="text-slate-600">2% Commission</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono-ui text-[10px] uppercase tracking-widest text-white/25">
+            <span>Treasury: <strong className="text-cyan-400/60">0x155A...5Af9</strong></span>
+            <button onClick={() => setProvablyFairOpen(true)} className="hover:text-white/60 transition-colors">Provably Fair</button>
+            <button onClick={() => setShowOpening(true)} className="hover:text-white/60 transition-colors">Replay Intro</button>
+            <span>Product Preview / 2026</span>
           </div>
         </div>
       </footer>

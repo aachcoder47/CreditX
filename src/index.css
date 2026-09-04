@@ -1,148 +1,208 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
-/* ─── Base Reset ─────────────────────────────────────────────────────────── */
+/* ─── Base ────────────────────────────────────────────────────────────────── */
 @layer base {
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    font-size: 16px;
   }
 
   body {
-    background-color: #030508;
-    color: #E2E8F0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #000;
+    color: #fff;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
     overflow-x: hidden;
-    min-height: 100vh;
-    margin: 0;
+    min-height: 100svh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   input[type=number]::-webkit-inner-spin-button,
-  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
   input[type=number] { -moz-appearance: textfield; }
 }
 
-/* ─── Font Utilities ─────────────────────────────────────────────────────── */
-.font-orbitron { font-family: 'Orbitron', sans-serif; }
-.font-mono-jet { font-family: 'JetBrains Mono', monospace; }
+/* ─── Typography ──────────────────────────────────────────────────────────── */
+.font-display  { font-family: 'Outfit', system-ui, sans-serif; }
+.font-mono-ui  { font-family: 'Space Mono', monospace; }
+.font-sans-ui  { font-family: 'Space Grotesk', sans-serif; }
 
-
-/* ─── Cyber Grid ─────────────────────────────────────────────────────────── */
-.cyber-grid {
-  background-size: 44px 44px;
-  background-image:
-    linear-gradient(to right, rgba(0,240,255,0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0,240,255,0.045) 1px, transparent 1px);
-  animation: gridDrift 30s linear infinite;
+/* ─── Dot Grid Background (à la Knox) ────────────────────────────────────── */
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
-@keyframes gridDrift {
-  0%   { background-position: 0 0; }
-  100% { background-position: 44px 44px; }
+/* ─── Stripe Texture (à la Knox "how it works" section) ──────────────────── */
+.stripe-texture {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 24px,
+    rgba(255,255,255,0.025) 24px,
+    rgba(255,255,255,0.025) 26px
+  );
 }
 
-.cyber-grid-glow {
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 25%, transparent 78%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 25%, transparent 78%);
+/* ─── Noise Overlay ───────────────────────────────────────────────────────── */
+.noise-overlay::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.4;
 }
 
-/* ─── Glassmorphism Panels ───────────────────────────────────────────────── */
+/* ─── Glass / Panels ──────────────────────────────────────────────────────── */
+/* Sharp-edged Knox-style cards */
+.panel {
+  background: #0a0a0a;
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.panel-hover {
+  transition: border-color 0.3s, background 0.3s;
+}
+.panel-hover:hover {
+  border-color: rgba(255,255,255,0.25);
+  background: #0d0d0d;
+}
+
+/* Active/selected variant — cyan accent */
+.panel-cyan {
+  background: #020d0f;
+  border: 1px solid rgba(0,240,255,0.30);
+  box-shadow: 0 0 40px rgba(0,240,255,0.06) inset;
+}
+
+.panel-violet {
+  background: #06020f;
+  border: 1px solid rgba(139,92,246,0.30);
+  box-shadow: 0 0 40px rgba(112,0,255,0.06) inset;
+}
+
+/* Legacy glass-panel referenced in modals */
 .glass-panel {
-  background: rgba(10, 13, 22, 0.78);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border: 1px solid rgba(255,255,255,0.07);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.03) inset,
-    0 25px 70px -15px rgba(0,0,0,0.9),
-    0 1px 0 rgba(255,255,255,0.07) inset;
+  background: #0a0a0a;
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-.glass-panel-cyan {
-  background: radial-gradient(110% 80% at 50% -10%, rgba(0,240,255,0.11) 0%, rgba(6,8,18,0.90) 100%);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(0,240,255,0.22);
-  box-shadow:
-    0 0 70px -15px rgba(0,240,255,0.22),
-    0 0 0 1px rgba(0,240,255,0.07) inset,
-    0 1px 0 rgba(0,240,255,0.20) inset,
-    0 30px 80px -20px rgba(0,0,0,0.95);
-}
+.glass-panel-cyan  { background: #020d0f; border: 1px solid rgba(0,240,255,0.30); }
+.glass-panel-violet{ background: #06020f; border: 1px solid rgba(139,92,246,0.30); }
 
-.glass-panel-violet {
-  background: radial-gradient(110% 80% at 50% -10%, rgba(139,92,246,0.13) 0%, rgba(6,8,18,0.90) 100%);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(139,92,246,0.28);
-  box-shadow:
-    0 0 70px -15px rgba(112,0,255,0.28),
-    0 0 0 1px rgba(139,92,246,0.08) inset,
-    0 1px 0 rgba(139,92,246,0.22) inset,
-    0 30px 80px -20px rgba(0,0,0,0.95);
-}
+/* ─── Text Glows (restrained) ─────────────────────────────────────────────── */
+.text-glow-cyan    { text-shadow: 0 0 20px rgba(0,240,255,0.6); }
+.text-glow-violet  { text-shadow: 0 0 20px rgba(168,85,247,0.6); }
+.text-glow-emerald { text-shadow: 0 0 16px rgba(16,185,129,0.6); }
+.text-glow-amber   { text-shadow: 0 0 16px rgba(245,158,11,0.6); }
 
-/* ─── Neon Text Glows ────────────────────────────────────────────────────── */
-.text-glow-cyan    { text-shadow: 0 0 10px rgba(0,240,255,0.9),   0 0 28px rgba(0,240,255,0.45),   0 0 60px rgba(0,240,255,0.15); }
-.text-glow-violet  { text-shadow: 0 0 10px rgba(168,85,247,0.9),  0 0 28px rgba(112,0,255,0.45),   0 0 60px rgba(112,0,255,0.15); }
-.text-glow-emerald { text-shadow: 0 0 10px rgba(16,185,129,0.9),  0 0 26px rgba(16,185,129,0.42); }
-.text-glow-amber   { text-shadow: 0 0 10px rgba(245,158,11,0.9),  0 0 26px rgba(245,158,11,0.4); }
-
-/* ─── Box Glows ──────────────────────────────────────────────────────────── */
-.glow-cyan    { box-shadow: 0 0 30px rgba(0,240,255,0.35),  0 0 70px rgba(0,240,255,0.12); }
-.glow-violet  { box-shadow: 0 0 30px rgba(112,0,255,0.35),  0 0 70px rgba(112,0,255,0.12); }
-.glow-emerald { box-shadow: 0 0 24px rgba(16,185,129,0.30), 0 0 55px rgba(16,185,129,0.10); }
-.glow-amber   { box-shadow: 0 0 24px rgba(245,158,11,0.35), 0 0 55px rgba(245,158,11,0.12); }
-
-/* ─── 3D Coin ─────────────────────────────────────────────────────────────── */
+/* ─── 3D Coin Utilities ───────────────────────────────────────────────────── */
 .preserve-3d     { transform-style: preserve-3d; -webkit-transform-style: preserve-3d; }
 .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 
-/* ─── Shimmer ────────────────────────────────────────────────────────────── */
+/* ─── Marquee / Ticker ────────────────────────────────────────────────────── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee { animation: marquee 28s linear infinite; display: flex; width: max-content; }
+
+/* ─── Shimmer on buttons ──────────────────────────────────────────────────── */
 @keyframes shimmer {
   0%   { transform: translateX(-150%) skewX(-15deg); }
   100% { transform: translateX(250%)  skewX(-15deg); }
 }
-.animate-shimmer { animation: shimmer 2.6s cubic-bezier(0.4,0,0.2,1) infinite; }
+.animate-shimmer { animation: shimmer 2.8s cubic-bezier(0.4,0,0.2,1) infinite; }
 
-/* ─── Pulse Glow ─────────────────────────────────────────────────────────── */
+/* ─── Pulse / float ───────────────────────────────────────────────────────── */
 @keyframes pulseGlow {
-  0%,100% { opacity: 0.45; transform: scale(1); }
-  50%      { opacity: 0.90; transform: scale(1.07); }
+  0%,100% { opacity: 0.4; }
+  50%      { opacity: 0.8; }
 }
-.animate-pulse-glow { animation: pulseGlow 4s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulseGlow 3.5s ease-in-out infinite; }
 
-/* ─── Float ──────────────────────────────────────────────────────────────── */
 @keyframes floatCoin {
-  0%,100% { transform: translateY(0px); }
-  50%      { transform: translateY(-10px); }
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
 }
 .animate-float { animation: floatCoin 3.5s ease-in-out infinite; }
 
-/* ─── Slow Spins ─────────────────────────────────────────────────────────── */
 @keyframes spinSlow        { from { transform: rotate(0deg);   } to { transform: rotate(360deg); } }
-@keyframes spinReverseSlow { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+@keyframes spinReverseSlow { from { transform: rotate(360deg); } to { transform: rotate(0deg);   } }
 .animate-spin-slow         { animation: spinSlow        18s linear infinite; }
 .animate-spin-reverse-slow { animation: spinReverseSlow 22s linear infinite; }
 
-/* ─── Stat Number Count-up Slide ─────────────────────────────────────────── */
-@keyframes slideInUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ─── Entrance Animations ─────────────────────────────────────────────────── */
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
 }
-.animate-slide-up { animation: slideInUp 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+.reveal-up { animation: revealUp 0.6s cubic-bezier(0.16,1,0.3,1) both; }
 
-/* ─── Neon Border Pulse ──────────────────────────────────────────────────── */
-@keyframes borderCyanPulse {
-  0%,100% { box-shadow: 0 0 10px rgba(0,240,255,0.15); border-color: rgba(0,240,255,0.25); }
-  50%      { box-shadow: 0 0 25px rgba(0,240,255,0.40); border-color: rgba(0,240,255,0.60); }
+/* ─── Code-block reveal (Knox-style) ─────────────────────────────────────── */
+@keyframes codeReveal {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
-.animate-border-cyan { animation: borderCyanPulse 2.2s ease-in-out infinite; }
+.code-reveal { animation: codeReveal 0.3s ease both; }
 
-/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: rgba(4,6,10,0.8); }
-::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.18); border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,240,255,0.45); }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.28); }
+
+/* ─── Knox-style tag badge ────────────────────────────────────────────────── */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.55);
+}
+
+.tag-cyan {
+  border-color: rgba(0,240,255,0.35);
+  background: rgba(0,240,255,0.06);
+  color: #22D3EE;
+}
+
+.tag-emerald {
+  border-color: rgba(16,185,129,0.35);
+  background: rgba(16,185,129,0.06);
+  color: #34D399;
+}
+
+/* ─── Separator line with label ─────────────────────────────────────────────*/
+.divider-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255,255,255,0.25);
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.divider-label::before,
+.divider-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
