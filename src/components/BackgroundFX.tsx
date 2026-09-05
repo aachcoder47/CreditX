@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface BackgroundFXProps {
   intensity?: 'normal' | 'intense';
@@ -6,6 +6,18 @@ interface BackgroundFXProps {
 
 export const BackgroundFX: React.FC<BackgroundFXProps> = ({ intensity = 'normal' }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMouse({
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight,
+      });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -25,46 +37,73 @@ export const BackgroundFX: React.FC<BackgroundFXProps> = ({ intensity = 'normal'
 
     window.addEventListener('resize', handleResize);
 
-    // Particle pool
-    const particleCount = intensity === 'intense' ? 70 : 45;
-    const particles = Array.from({ length: particleCount }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      radius: Math.random() * 2 + 0.5,
-      color: Math.random() > 0.5 ? '#00F0FF' : '#7000FF',
-      alpha: Math.random() * 0.5 + 0.1,
-      speedX: (Math.random() - 0.5) * 0.4,
-      speedY: -Math.random() * 0.6 - 0.2,
-    }));
+    const particleCount = intensity === 'intense' ? 85 : 55;
+    type Particle = {
+      x: number; y: number; radius: number;
+      color: string; alpha: number;
+      speedX: number; speedY: number;
+      twinkle: number; twinkleSpeed: number;
+      size: number;
+    };
+    const particles: Particle[] = Array.from({ length: particleCount }, () => {
+      const isCyan = Math.random() > 0.45;
+      const isEmerald = !isCyan && Math.random() > 0.5;
+      return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 1.8 + 0.3,
+        size: Math.random() * 1.8 + 0.3,
+        color: isCyan ? '#00F0FF' : (isEmerald ? '#10B981' : '#A855F7'),
+        alpha: Math.random() * 0.5 + 0.12,
+        speedX: (Math.random() - 0.5) * 0.35,
+        speedY: -Math.random() * 0.5 - 0.12,
+        twinkle: Math.random() * Math.PI * 2,
+        twinkleSpeed: Math.random() * 0.04 + 0.01,
+      };
+    });
 
     let t = 0;
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
-      t += 0.01;
+      t += 0.012;
 
-      // Draw subtle glowing dust particles
       for (const p of particles) {
         p.x += p.speedX;
         p.y += p.speedY;
+        p.twinkle += p.twinkleSpeed;
 
-        // Wrap around
-        if (p.y < 0) p.y = height;
-        if (p.x < 0) p.x = width;
-        if (p.x > width) p.x = 0;
+        if (p.y < -20) { p.y = height + 20; p.x = Math.random() * width; }
+        if (p.x < -20) p.x = width + 20;
+        if (p.x > width + 20) p.x = -20;
+
+        const twinkleAlpha = p.alpha * (0.55 + 0.45 * Math.sin(p.twinkle));
+        const pulse = 1 + 0.3 * Math.sin(t * 2 + p.twinkle);
+        const r = p.radius * pulse;
 
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.alpha;
-        ctx.shadowBlur = 8;
+        ctx.globalAlpha = twinkleAlpha;
+        ctx.shadowBlur = 12;
         ctx.shadowColor = p.color;
         ctx.fill();
+
+        if (p.size > 1.4) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r * 2.8, 0, Math.PI * 2);
+          const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 2.8);
+          grad.addColorStop(0, p.color + '55');
+          grad.addColorStop(1, p.color + '00');
+          ctx.fillStyle = grad;
+          ctx.globalAlpha = twinkleAlpha * 0.7;
+          ctx.shadowBlur = 0;
+          ctx.fill();
+        }
       }
 
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
-
       animationFrameId = requestAnimationFrame(render);
     };
 
@@ -76,31 +115,52 @@ export const BackgroundFX: React.FC<BackgroundFXProps> = ({ intensity = 'normal'
     };
   }, [intensity]);
 
+  const px = (mouse.x - 0.5) * 60;
+  const py = (mouse.y - 0.5) * 60;
+  const px2 = (mouse.x - 0.5) * 100;
+  const py2 = (mouse.y - 0.5) * 100;
+
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-      {/* Deep Space Base */}
-      <div className="absolute inset-0 bg-[#090A0F]" />
+      <div className="absolute inset-0" style={{ background: '#020205' }} />
 
-      {/* Cyber Grid */}
-      <div className="absolute inset-0 cyber-grid cyber-grid-glow opacity-30" />
+      <div className="absolute inset-0 dot-grid" style={{ opacity: 0.55 }} />
 
-      {/* Ambient Neon Glow Orbs */}
-      <div 
-        className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full bg-[#00F0FF]/10 blur-[130px] animate-pulse-glow"
+      <div
+        className="aurora-orb aurora-orb-1"
+        style={{ transform: `translate(${px * 0.3}px, ${py * 0.3}px)` }}
       />
-      <div 
-        className="absolute -bottom-40 -right-40 w-[650px] h-[650px] rounded-full bg-[#7000FF]/15 blur-[140px] animate-pulse-glow" 
-        style={{ animationDelay: '1.5s' }}
+      <div
+        className="aurora-orb aurora-orb-2"
+        style={{ transform: `translate(${px2 * 0.25}px, ${py2 * 0.25}px)` }}
       />
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full bg-cyan-950/20 blur-[160px] pointer-events-none"
+      <div
+        className="aurora-orb aurora-orb-3"
+        style={{ transform: `translate(${px * 0.18}px, ${py * 0.18}px)` }}
       />
 
-      {/* Canvas Particles */}
+      <div
+        className="absolute w-[40vw] h-[40vw] rounded-full pointer-events-none transition-transform duration-1000 ease-out"
+        style={{
+          top: `${30 - py * 0.3}%`,
+          left: `${45 + px * 0.3}%`,
+          transform: 'translate(-50%, -50%)',
+          background: 'radial-gradient(circle, rgba(251,191,36,0.12) 0%, transparent 60%)',
+          filter: 'blur(60px)',
+          mixBlendMode: 'screen',
+        }}
+      />
+
       <canvas ref={canvasRef} className="absolute inset-0 block" />
 
-      {/* Subtle Scanline Overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] opacity-15 pointer-events-none" />
+      <div className="absolute inset-0 scanlines" />
+
+      <div
+        className="absolute inset-0 pointer-events-none transition-opacity duration-700"
+        style={{
+          background: `radial-gradient(ellipse at ${50 + px * 0.8}% ${40 + py * 0.8}%, transparent 0%, transparent 35%, rgba(0,0,0,0.55) 100%)`,
+        }}
+      />
     </div>
   );
 };

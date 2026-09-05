@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// BackgroundFX replaced by CSS dot-grid
+import { BackgroundFX } from './components/BackgroundFX';
 import { Navbar } from './components/Navbar';
 import { StatsBar } from './components/StatsBar';
 import { Arena } from './components/Arena';
@@ -452,16 +452,14 @@ export function App() {
   const currentCurrency = wallet.currency || (wallet.network === 'Solana' ? 'SOL' : 'ETH');
 
   return (
-    <div className={`min-h-screen relative flex flex-col text-white noise-overlay ${isScreenShaking ? 'animate-[bounce_0.12s_3]' : ''}`} style={{ background: '#000' }}>
-      {/* Cinematic Opening */}
+    <div className={`min-h-screen relative flex flex-col text-white noise-overlay vignette ${isScreenShaking ? 'animate-[bounce_0.12s_3]' : ''}`}>
+      <BackgroundFX intensity="intense" />
+
       <AnimatePresence>
         {showOpening && (
           <OpeningTransition onComplete={() => setShowOpening(false)} />
         )}
       </AnimatePresence>
-
-      {/* ── Pure black dot-grid background (Knox style) ── */}
-      <div className="fixed inset-0 -z-20 pointer-events-none dot-grid" style={{ opacity: 0.5 }} />
 
 
       {/* Top Navbar with Entrance Spring */}
