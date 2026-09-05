@@ -6,7 +6,16 @@ class SoundEffects {
   private isMuted: boolean = false;
 
   constructor() {
-    // Lazy init audio context on first user gesture
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('creditx_muted') || localStorage.getItem('cyberflip_muted');
+        if (saved !== null) {
+          this.isMuted = saved === 'true';
+        }
+      } catch {
+        // ignore
+      }
+    }
   }
 
   private initCtx() {
@@ -22,7 +31,7 @@ class SoundEffects {
   public setMuted(muted: boolean) {
     this.isMuted = muted;
     try {
-      localStorage.setItem('cyberflip_muted', muted ? 'true' : 'false');
+      localStorage.setItem('creditx_muted', muted ? 'true' : 'false');
     } catch {
       // ignore
     }

@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radio, History, ArrowUpRight, ArrowDownRight, Zap, Flame, ExternalLink } from 'lucide-react';
+import { Radio, History, ArrowUpRight, ExternalLink } from 'lucide-react';
 import type { LivePVPItem, FlipResult } from '../types/game';
 import { getExplorerTxLink } from '../utils/blockchain';
 
@@ -16,304 +16,192 @@ export const LiveActivityFeed: React.FC<LiveActivityFeedProps> = ({
   currency,
 }) => {
   const [activeTab, setActiveTab] = useState<'GLOBAL' | 'MY_HISTORY'>('GLOBAL');
-  const feedRef = useRef<HTMLDivElement>(null);
-  const [feedPos, setFeedPos] = useState({ mx: 50, my: 50 });
-
-  const handleFeedMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!feedRef.current) return;
-    const rect = feedRef.current.getBoundingClientRect();
-    const mx = ((e.clientX - rect.left) / rect.width) * 100;
-    const my = ((e.clientY - rect.top) / rect.height) * 100;
-    setFeedPos({ mx, my });
-  };
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
-      <div
-        ref={feedRef}
-        onMouseMove={handleFeedMouseMove}
-        className="relative rounded-3xl glass-panel p-4 sm:p-6 border border-white/10 shadow-2xl corner-brackets glow-card overflow-hidden"
-        style={{
-          ['--mx' as string]: `${feedPos.mx}%`,
-          ['--my' as string]: `${feedPos.my}%`,
-          background: `
-            radial-gradient(circle at ${feedPos.mx}% ${feedPos.my}%, rgba(0,240,255,0.06) 0%, transparent 45%),
-            linear-gradient(180deg, rgba(15,23,42,0.85) 0%, rgba(2,6,23,0.92) 100%)
-          `,
-        }}
-      >
-        <span className="cb-tl" />
-        <span className="cb-br" />
-
-        <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-purple-500/15 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-28 -left-28 w-52 h-52 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
-
-        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 pb-3 sm:pb-4 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5 sm:h-3 sm:w-3">
+    <div className="w-full max-w-[1340px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <div className="defi-card p-4 sm:p-6 specular-border">
+        
+        {/* Header Ribbon & Tab Switcher */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.06]">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 bg-cyan-500 shadow-[0_0_8px_#22D3EE]" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400" />
             </span>
-            <h3 className="font-['Orbitron'] text-xs sm:text-sm md:text-base font-bold text-white tracking-wider">
-              ON-CHAIN <span className="text-shimmer">ACTIVITY</span>
+            <h3 className="font-display font-bold text-base sm:text-lg text-white">
+              Settlement Activity
             </h3>
-            <span className="tag-emerald text-[9px] sm:text-[10px]">
-              VERIFIED
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono-ui bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
+              On-Chain Verified
             </span>
           </div>
 
-          <div className="relative flex items-center gap-1 p-1 rounded-xl bg-black/60 border border-white/10 self-start sm:self-auto backdrop-blur-sm">
-            <motion.div
-              layoutId="feedActiveTab"
-              className={`absolute top-1 bottom-1 rounded-lg shadow-lg pointer-events-none z-0 ${
-                activeTab === 'GLOBAL'
-                  ? 'left-1 bg-gradient-to-r from-cyan-500/25 to-cyan-500/10 border border-cyan-500/40 shadow-[0_0_12px_rgba(0,240,255,0.3)]'
-                  : 'right-1 bg-gradient-to-r from-purple-500/25 to-purple-500/10 border border-purple-500/40 shadow-[0_0_12px_rgba(112,0,255,0.3)]'
-              }`}
-              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-            />
-            <motion.button
-              whileTap={{ scale: 0.95 }}
+          {/* Segmented Tab Pill */}
+          <div className="segmented-control self-start sm:self-auto p-1 rounded-xl bg-black/40 border border-white/10">
+            <button
               onClick={() => setActiveTab('GLOBAL')}
-              className={`relative z-10 flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-mono font-bold transition-all ${
-                activeTab === 'GLOBAL' ? 'text-cyan-300' : 'text-slate-400 hover:text-white'
+              className={`py-1.5 px-3 rounded-lg font-mono-ui text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                activeTab === 'GLOBAL'
+                  ? 'bg-white/10 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Radio className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${activeTab === 'GLOBAL' ? 'drop-shadow-[0_0_6px_#22D3EE]' : ''}`} />
-              <span>LIVE ({liveItems.length})</span>
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
+              <Radio className="w-3 h-3 text-cyan-400" />
+              <span>Network Bets ({liveItems.length})</span>
+            </button>
+            <button
               onClick={() => setActiveTab('MY_HISTORY')}
-              className={`relative z-10 flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-mono font-bold transition-all ${
-                activeTab === 'MY_HISTORY' ? 'text-purple-300' : 'text-slate-400 hover:text-white'
+              className={`py-1.5 px-3 rounded-lg font-mono-ui text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                activeTab === 'MY_HISTORY'
+                  ? 'bg-white/10 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
-              <History className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${activeTab === 'MY_HISTORY' ? 'drop-shadow-[0_0_6px_#A855F7]' : ''}`} />
-              <span>MY ROUNDS ({userHistory.length})</span>
-            </motion.button>
+              <History className="w-3 h-3 text-amber-400" />
+              <span>My Rounds ({userHistory.length})</span>
+            </button>
           </div>
         </div>
 
-        <div className="relative mt-3 sm:mt-4 space-y-2 max-h-72 sm:max-h-80 overflow-y-auto pr-1 custom-scrollbar">
+        {/* Stream List */}
+        <div className="mt-4 space-y-2 max-h-80 overflow-y-auto pr-1">
           {activeTab === 'GLOBAL' ? (
             liveItems.length === 0 ? (
-              <div className="text-center py-8 sm:py-12 text-slate-400 font-mono text-xs relative">
-                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-black/40 border border-white/10">
-                  <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                  No rounds yet. Connect wallet and flip to see live on-chain activity!
-                </div>
+              <div className="text-center py-10 sm:py-14 text-slate-500 font-mono-ui text-xs">
+                <Radio className="w-4 h-4 text-cyan-400 animate-pulse mx-auto mb-2" />
+                No global rounds recorded yet. Place a wager to trigger the live on-chain stream!
               </div>
             ) : (
               <AnimatePresence initial={false}>
                 {liveItems.map((item) => {
                   const txUrl = item.txHash ? getExplorerTxLink(item.chainId || null, item.txHash) : null;
-                  const accent = item.isWin ? '#10B981' : '#F43F5E';
                   return (
                     <motion.div
                       key={item.id}
-                      initial={{ opacity: 0, y: -10, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                      whileHover={{ y: -1, scale: 1.005 }}
-                      className={`relative group p-2.5 sm:p-3.5 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-2 text-xs font-mono overflow-hidden ${
-                        item.isWin
-                          ? 'bg-emerald-950/25 border-emerald-500/30 hover:border-emerald-400/70'
-                          : 'bg-rose-950/20 border-rose-500/20 hover:border-rose-400/50'
-                      }`}
-                      style={{
-                        boxShadow: item.isWin
-                          ? '0 0 18px rgba(16,185,129,0.1)'
-                          : '0 0 12px rgba(244,63,94,0.08)',
-                      }}
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.05] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 font-mono-ui text-xs"
                     >
-                      <div
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl"
-                        style={{
-                          background: `radial-gradient(circle at 20% 50%, ${accent}12 0%, transparent 50%)`,
-                          boxShadow: `inset 0 0 20px ${accent}0A`,
-                        }}
-                      />
-                      <div
-                        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-2/3 transition-all duration-400 rounded-full"
-                        style={{
-                          background: `linear-gradient(90deg, transparent, ${accent}AA, transparent)`,
-                          boxShadow: `0 0 10px ${accent}88`,
-                        }}
-                      />
-
-                      <div className="relative flex items-center gap-2 sm:gap-3 min-w-0">
-                        <div
-                          className={`relative w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center border shrink-0 font-bold transition-all duration-300 group-hover:scale-105 ${
+                      {/* Player & Side info */}
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
                             item.side === 'HEADS'
-                              ? 'bg-cyan-950/80 border-cyan-400/50 text-cyan-300'
-                              : 'bg-purple-950/80 border-purple-400/50 text-purple-300'
+                              ? 'bg-cyan-500/15 border border-cyan-400/30 text-cyan-300'
+                              : 'bg-amber-500/15 border border-amber-400/30 text-amber-300'
                           }`}
-                          style={{
-                            boxShadow: item.side === 'HEADS'
-                              ? '0 0 12px rgba(0,240,255,0.25), inset 0 0 10px rgba(0,240,255,0.1)'
-                              : '0 0 12px rgba(112,0,255,0.25), inset 0 0 10px rgba(112,0,255,0.1)',
-                          }}
                         >
-                          {item.side === 'HEADS' ? (
-                            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          ) : (
-                            <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          )}
-                        </div>
-
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 truncate">
-                            <span className="font-bold text-slate-200 truncate group-hover:text-white transition-colors">
-                              {item.player}
-                            </span>
-                            <span className="text-[10px] text-slate-400 hidden sm:inline">
-                              flipped <span className={item.side === 'HEADS' ? 'text-cyan-400 font-bold' : 'text-purple-400 font-bold'}>{item.side}</span>
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-slate-400">
-                            <span className="flex items-center gap-1">
-                              <span className="w-1 h-1 rounded-full bg-slate-500" />
-                              {item.timeAgo}
-                            </span>
-                            {txUrl && (
-                              <a
-                                href={txUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-0.5 text-cyan-400 hover:text-cyan-300 transition-colors group/tx"
-                              >
-                                <span className="group-hover/tx:underline">Tx</span>
-                                <ExternalLink className="w-2.5 h-2.5 group-hover/tx:translate-x-0.5 group-hover/tx:-translate-y-0.5 transition-transform" />
-                              </a>
-                            )}
-                          </div>
-                        </div>
+                          {item.side}
+                        </span>
+                        <span className="text-slate-300 font-medium">
+                          {item.player}
+                        </span>
+                        <span className="text-slate-500 text-[11px]">
+                          {item.timeAgo}
+                        </span>
                       </div>
 
-                      <div className="relative text-right shrink-0">
-                        {item.isWin ? (
-                          <div className="flex items-center justify-end gap-0.5 sm:gap-1 text-emerald-400 font-bold font-['Orbitron'] text-xs sm:text-sm">
-                            <ArrowUpRight className="w-3.5 h-3.5 drop-shadow-[0_0_6px_#10B981]" />
-                            <span className="text-glow-emerald">+{item.payout.toFixed(3)} {item.currency || currency}</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-end gap-0.5 sm:gap-1 text-rose-400/90 font-mono text-xs sm:text-sm">
-                            <ArrowDownRight className="w-3.5 h-3.5" />
-                            <span>-{item.amount.toFixed(3)} {item.currency || currency}</span>
-                          </div>
-                        )}
-                        <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${item.isWin ? 'text-emerald-400/90' : 'text-rose-400/80'}`}>
-                          {item.isWin ? 'WON 1.98X' : 'LOST'}
+                      {/* Financial return & explorer link */}
+                      <div className="flex items-center justify-between sm:justify-end gap-3 self-stretch sm:self-auto pt-1 sm:pt-0 border-t sm:border-t-0 border-white/[0.04]">
+                        <span className="text-slate-400">
+                          Stake: <strong className="text-white">{item.amount} {item.currency || currency}</strong>
                         </span>
+
+                        <span
+                          className={`px-2 py-0.5 rounded-md font-bold text-[11px] ${
+                            item.isWin
+                              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]'
+                              : 'bg-slate-800/60 text-slate-400 border border-white/5'
+                          }`}
+                        >
+                          {item.isWin ? `+${item.payout} ${item.currency || currency}` : 'LOST'}
+                        </span>
+
+                        {txUrl && (
+                          <a
+                            href={txUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-1 rounded-md hover:bg-white/10 text-slate-400 hover:text-cyan-300 transition-colors"
+                            title="View on Explorer"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
                       </div>
                     </motion.div>
                   );
                 })}
               </AnimatePresence>
             )
-          ) : userHistory.length === 0 ? (
-            <div className="text-center py-8 sm:py-12 text-slate-400 font-mono text-xs relative">
-              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-black/40 border border-white/10">
-                <History className="w-3.5 h-3.5 text-purple-400" />
-                No flips recorded yet. Start flipping above to build your PVP record!
-              </div>
-            </div>
           ) : (
-            <div className="space-y-2">
-              {userHistory.map((h) => {
-                const txUrl = h.txHash ? getExplorerTxLink(h.chainId || null, h.txHash) : null;
-                const accent = h.isWin ? '#10B981' : '#F43F5E';
-                return (
-                  <motion.div
-                    key={h.id}
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                    whileHover={{ y: -1, scale: 1.005 }}
-                    className={`relative group p-2.5 sm:p-3.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-mono overflow-hidden ${
-                      h.isWin
-                        ? 'bg-emerald-950/25 border-emerald-500/40'
-                        : 'bg-rose-950/20 border-rose-500/25'
-                    }`}
-                    style={{
-                      boxShadow: h.isWin ? '0 0 18px rgba(16,185,129,0.14)' : undefined,
-                    }}
-                  >
-                    <div
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl"
-                      style={{
-                        background: `radial-gradient(circle at 20% 50%, ${accent}12 0%, transparent 50%)`,
-                        boxShadow: `inset 0 0 20px ${accent}0A`,
-                      }}
-                    />
-                    <div
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-2/3 transition-all duration-400 rounded-full"
-                      style={{
-                        background: `linear-gradient(90deg, transparent, ${accent}AA, transparent)`,
-                        boxShadow: `0 0 10px ${accent}88`,
-                      }}
-                    />
-
-                    <div className="relative flex items-center gap-2 sm:gap-3 min-w-0">
-                      <div
-                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center font-bold shrink-0 transition-all duration-300 group-hover:scale-105 ${
-                          h.winningSide === 'HEADS'
-                            ? 'bg-cyan-950/80 border border-cyan-400/50 text-cyan-300'
-                            : 'bg-purple-950/80 border border-purple-400/50 text-purple-300'
-                        }`}
-                        style={{
-                          boxShadow: h.winningSide === 'HEADS'
-                            ? '0 0 12px rgba(0,240,255,0.25), inset 0 0 10px rgba(0,240,255,0.1)'
-                            : '0 0 12px rgba(112,0,255,0.25), inset 0 0 10px rgba(112,0,255,0.1)',
-                        }}
-                      >
-                        {h.winningSide === 'HEADS' ? <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+            userHistory.length === 0 ? (
+              <div className="text-center py-10 sm:py-14 text-slate-500 font-mono-ui text-xs">
+                <History className="w-4 h-4 text-amber-400 mx-auto mb-2" />
+                You haven't played any rounds yet this session.
+              </div>
+            ) : (
+              <AnimatePresence initial={false}>
+                {userHistory.map((item) => {
+                  const txUrl = item.txHash ? getExplorerTxLink(item.chainId || null, item.txHash) : null;
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.05] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 font-mono-ui text-xs"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                            item.selectedSide === 'HEADS'
+                              ? 'bg-cyan-500/15 border border-cyan-400/30 text-cyan-300'
+                              : 'bg-amber-500/15 border border-amber-400/30 text-amber-300'
+                          }`}
+                        >
+                          {item.selectedSide}
+                        </span>
+                        <span className="text-slate-400 text-[11px]">
+                          Result: <strong className="text-white">{item.winningSide}</strong>
+                        </span>
+                        <span className="text-slate-500 text-[10px]">
+                          Nonce #{item.nonce}
+                        </span>
                       </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5 truncate">
-                          <span className="font-bold text-white">
-                            Landed <span className={h.winningSide === 'HEADS' ? 'text-cyan-400' : 'text-purple-400'}>{h.winningSide}</span>
-                          </span>
-                          <span className="text-[10px] text-slate-400 hidden sm:inline">
-                            (Picked <span className={h.selectedSide === h.winningSide ? 'text-emerald-400' : 'text-rose-400'}>{h.selectedSide}</span>)
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-slate-400">
-                          <span className="font-bold text-slate-300">#{h.nonce}</span>
-                          <span>•</span>
-                          <span>{new Date(h.timestamp).toLocaleTimeString()}</span>
-                          {txUrl && (
-                            <>
-                              <span>•</span>
-                              <a
-                                href={txUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-0.5 text-cyan-400 hover:text-cyan-300 transition-colors group/ex"
-                              >
-                                <span className="group/ex:underline">Explorer</span>
-                                <ExternalLink className="w-2.5 h-2.5 group/ex:translate-x-0.5 group/ex:-translate-y-0.5 transition-transform" />
-                              </a>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="relative text-right shrink-0">
-                      <span className={`font-['Orbitron'] font-bold text-xs sm:text-sm ${h.isWin ? 'text-emerald-400 text-glow-emerald' : 'text-rose-400'}`}>
-                        {h.isWin ? `+${h.payout.toFixed(3)} ${h.currency || currency}` : `-${h.betAmount.toFixed(3)} ${h.currency || currency}`}
-                      </span>
-                      <span className={`block text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${h.isWin ? 'text-emerald-400/90' : 'text-rose-400/80'}`}>
-                        {h.isWin ? 'VICTORY' : 'DEFEAT'}
-                      </span>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                      <div className="flex items-center justify-between sm:justify-end gap-3 self-stretch sm:self-auto pt-1 sm:pt-0 border-t sm:border-t-0 border-white/[0.04]">
+                        <span className="text-slate-400">
+                          Stake: <strong className="text-white">{item.betAmount} {item.currency || currency}</strong>
+                        </span>
+
+                        <span
+                          className={`px-2 py-0.5 rounded-md font-bold text-[11px] ${
+                            item.isWin
+                              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]'
+                              : 'bg-rose-950/40 text-rose-300 border border-rose-500/20'
+                          }`}
+                        >
+                          {item.isWin ? `+${item.payout} ${item.currency || currency}` : 'DEFEAT'}
+                        </span>
+
+                        {txUrl && (
+                          <a
+                            href={txUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-1 rounded-md hover:bg-white/10 text-slate-400 hover:text-cyan-300 transition-colors"
+                            title="Verify on Chain"
+                          >
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            )
           )}
         </div>
       </div>

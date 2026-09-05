@@ -23,7 +23,7 @@ export function App() {
   // Wallet State with localStorage persistence
   const [wallet, setWallet] = useState<WalletState>(() => {
     try {
-      const saved = localStorage.getItem('cyberflip_wallet');
+      const saved = localStorage.getItem('creditx_wallet') || localStorage.getItem('cyberflip_wallet');
       if (saved) return JSON.parse(saved);
     } catch {
       // ignore
@@ -197,7 +197,7 @@ export function App() {
     }
 
     try {
-      localStorage.setItem('cyberflip_wallet', JSON.stringify(newWallet));
+      localStorage.setItem('creditx_wallet', JSON.stringify(newWallet));
     } catch {
       // ignore
     }
@@ -217,6 +217,7 @@ export function App() {
     setWallet(disconnected);
     setTxError(null);
     try {
+      localStorage.removeItem('creditx_wallet');
       localStorage.removeItem('cyberflip_wallet');
     } catch {
       // ignore
@@ -309,7 +310,7 @@ export function App() {
     const betWalletState = { ...wallet, solBalance: postBetBalance };
     setWallet(betWalletState);
     try {
-      localStorage.setItem('cyberflip_wallet', JSON.stringify(betWalletState));
+      localStorage.setItem('creditx_wallet', JSON.stringify(betWalletState));
     } catch {
       // ignore
     }
@@ -377,7 +378,7 @@ export function App() {
           solBalance: Number((prev.solBalance + payout).toFixed(4)),
         };
         try {
-          localStorage.setItem('cyberflip_wallet', JSON.stringify(credited));
+          localStorage.setItem('creditx_wallet', JSON.stringify(credited));
         } catch {
           // ignore
         }
@@ -551,30 +552,35 @@ export function App() {
         onUpdateClientSeed={(newSeed) => setClientSeed(newSeed)}
       />
 
-      {/* Footer — Knox editorial style */}
+      {/* Footer — Institutional DeFi Style */}
       <footer
-        className="relative z-10 w-full mt-auto px-5 sm:px-8 lg:px-10 py-6"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: '#000' }}
+        className="relative z-10 w-full mt-auto px-4 sm:px-8 py-6 border-t border-white/5 bg-[#030509]/90 backdrop-blur-md"
       >
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div
-              className="w-6 h-6 flex items-center justify-center"
-              style={{ background: '#00F0FF', clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}
-            >
-              <span className="font-mono-ui font-bold text-[8px] text-black">CF</span>
+            <div className="relative w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center p-[1px] shadow-sm shadow-cyan-500/30">
+              <div className="w-full h-full bg-[#030509] rounded-[7px] flex items-center justify-center">
+                <span className="font-display font-black text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
+                  CX
+                </span>
+              </div>
             </div>
             <div>
-              <span className="font-display font-bold text-sm text-white tracking-tight">CYBER<span style={{ color: '#00F0FF' }}>FLIP</span></span>
-              <p className="font-mono-ui text-[10px] text-white/25 mt-0.5 uppercase tracking-widest">On-chain · Provably Fair · 5s Rounds</p>
+              <div className="flex items-center gap-2">
+                <span className="font-display font-bold text-sm tracking-tight text-white">CreditX</span>
+                <span className="px-1.5 py-0.2 rounded text-[9px] font-mono text-cyan-400/80 bg-cyan-500/10 border border-cyan-500/20">v2.4</span>
+              </div>
+              <p className="font-sans text-[11px] text-slate-400 mt-0.5">
+                Decentralized On-Chain Wagering & Provably Fair Protocol
+              </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono-ui text-[10px] uppercase tracking-widest text-white/25">
-            <span>Treasury: <strong className="text-cyan-400/60">0x155A...5Af9</strong></span>
-            <button onClick={() => setProvablyFairOpen(true)} className="hover:text-white/60 transition-colors">Provably Fair</button>
-            <button onClick={() => setShowOpening(true)} className="hover:text-white/60 transition-colors">Replay Intro</button>
-            <span>Product Preview / 2026</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-400">
+            <span className="font-mono text-[11px]">Treasury: <strong className="text-cyan-400/80 font-normal">0x155A...5Af9</strong></span>
+            <button onClick={() => setProvablyFairOpen(true)} className="hover:text-white transition-colors">Provably Fair</button>
+            <button onClick={() => setShowOpening(true)} className="hover:text-white transition-colors">Protocol Intro</button>
+            <span className="font-mono text-[11px] text-slate-400">© 2026 CreditX Protocol</span>
           </div>
         </div>
       </footer>
